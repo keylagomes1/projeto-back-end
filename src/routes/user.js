@@ -1,16 +1,23 @@
 const express = require('express');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
+const bcrypt = require('bcrypt')
 
 const prisma = new PrismaClient();
 
 // Criar usuário
 router.post('/', async (req, res) => {
-    const { name, email } = req.body;
+    const { nome, sobrenome, email, senha } = req.body;
+    const verifyEmail = await prisma.user.findUnique({ where: { email } });
+    if (verifyEmail) {
+        return res.status(400).json({ message: 'E-mail já cadastrado' });
+        }
+    const hashedPassword = await bcrypt.hash(senha, 10);
     try {
         const user = await prisma.user.create({
-            data: { name, email }
+            data: { nome, sobrenome, email, senha: hashedPassword }
         });
+        delete user.senha;
         res.json(user);
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -34,11 +41,11 @@ router.get('/:id', async (req, res) => {
 // Atualizar usuário
 router.put('/:id', async (req, res) => {
     const { id } = req.params;
-    const { name, email } = req.body;
+    const { nome, sobrenome, email, senha } = req.body;
     try {
         const user = await prisma.user.update({
             where: { id: parseInt(id) },
-            data: { name, email }
+            data: { nome, sobrenome, email, senha }
         });
         res.json(user);
     } catch (error) {
