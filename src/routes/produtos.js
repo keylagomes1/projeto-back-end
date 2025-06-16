@@ -6,12 +6,12 @@ const prisma = new PrismaClient();
 
 // Criar usuário
 router.post('/', async (req, res) => {
-    const { name, email } = req.body;
+    const { nome, slug, use_in_menu, stock , descricao, preco, preco_com_desconto    } = req.body;
     try {
-        const user = await prisma.user.create({
-            data: { name, email }
+        const produtos = await prisma.produtos.create({
+            data: { nome, slug, use_in_menu,  stock , descricao, preco, preco_com_desconto   }
         });
-        res.json(user);
+        res.json(produtos);
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
@@ -19,28 +19,28 @@ router.post('/', async (req, res) => {
 
 // Listar usuários
 router.get('/', async (req, res) => {
-    const users = await prisma.user.findMany();
-    res.json(users);
+    const produtos = await prisma.produtos.findMany();
+    res.json(produtos);
 });
 // Listar por ID
 router.get('/:id', async (req, res) => {
   const id = Number(req.params.id);
-  const user = await prisma.user.findUnique({ where: { id } });
-  if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
-  res.json(user);
+  const produtos = await prisma.produtos.findUnique({ where: { id } });
+  if (!produtos) return res.status(404).json({ error: 'Produto não encontrado' });
+  res.json(produtos);
 });
 
 
 // Atualizar usuário
 router.put('/:id', async (req, res) => {
     const { id } = req.params;
-    const { name, email } = req.body;
+    const { nome, slug, use_in_menu  } = req.body;
     try {
-        const user = await prisma.user.update({
+        const produtos = await prisma.produtos.update({
             where: { id: parseInt(id) },
-            data: { name, email }
+            data: { nome, slug, use_in_menu,  stock , descricao, preco, preco_com_desconto   }
         });
-        res.json(user);
+        res.json(produtos);
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
@@ -48,11 +48,11 @@ router.put('/:id', async (req, res) => {
 // atualizar com Patch
 router.patch('/:id', async (req, res) => {
   const id = Number(req.params.id);
-  const updatedUser = await prisma.user.update({
+  const updatedProdutos = await prisma.produtos.update({
     where: { id },
     data: req.body
   });
-  res.json(updatedUser);
+  res.json(updatedProdutos);
 });
 
 
@@ -60,10 +60,10 @@ router.patch('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        await prisma.user.delete({
+        await prisma.produtos.delete({
             where: { id: parseInt(id) }
         });
-        res.json({ message: 'Usuário deletado' });
+        res.json({ message: 'Produto deletado' });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
