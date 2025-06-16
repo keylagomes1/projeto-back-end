@@ -4,7 +4,7 @@ const { PrismaClient } = require('@prisma/client');
 
 const prisma = new PrismaClient();
 
-// Criar usuário
+// Criar Produto
 router.post('/', async (req, res) => {
     const { nome, slug, use_in_menu, stock , descricao, preco, preco_com_desconto    } = req.body;
     try {
@@ -17,7 +17,7 @@ router.post('/', async (req, res) => {
     }
 });
 
-// Listar usuários
+// Listar Produto
 router.get('/', async (req, res) => {
     const produtos = await prisma.produtos.findMany();
     res.json(produtos);
@@ -31,7 +31,7 @@ router.get('/:id', async (req, res) => {
 });
 
 
-// Atualizar usuário
+// Atualizar Produto
 router.put('/:id', async (req, res) => {
     const { id } = req.params;
     const { nome, slug, use_in_menu  } = req.body;
@@ -56,7 +56,7 @@ router.patch('/:id', async (req, res) => {
 });
 
 
-// Deletar usuário
+// Deletar Produto
 router.delete('/:id', async (req, res) => {
     const { id } = req.params;
     try {

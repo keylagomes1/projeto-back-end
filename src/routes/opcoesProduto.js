@@ -5,7 +5,7 @@ const bcrypt = require('bcrypt')
 
 const prisma = new PrismaClient();
 
-// Criar usuário
+// Criar opcoesProduto
 router.post('/', async (req, res) => {
     const { produto_id, titulo, shape, radius, type, valores_produtos } = req.body;
     const verifyEmail = await prisma.opcoesProduto.findUnique({ where: { shape } });
@@ -24,7 +24,7 @@ router.post('/', async (req, res) => {
     }
 });
 
-// Listar usuários
+// Listar opcoesProduto
 router.get('/', async (req, res) => {
     const opcoesProduto = await prisma.opcoesProduto.findMany();
     res.json(opcoesProduto);
@@ -38,7 +38,7 @@ router.get('/:id', async (req, res) => {
 });
 
 
-// Atualizar usuário
+// Atualizar opcoesProduto
 router.put('/:id', async (req, res) => {
     const { id } = req.params;
     const { produto_id, titulo, shape, radius, type, valores_produtos } = req.body;
@@ -63,7 +63,7 @@ router.patch('/:id', async (req, res) => {
 });
 
 
-// Deletar usuário
+// Deletar opcoesProduto
 router.delete('/:id', async (req, res) => {
     const { id } = req.params;
     try {
