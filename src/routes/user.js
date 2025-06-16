@@ -1,79 +1,109 @@
 const express = require('express');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const verificarToken = require('../middlewares/verificarToken1');
+
+require('dotenv').config();
 
 const prisma = new PrismaClient();
 
-// Criar usuário
-router.post('/', async (req, res) => {
-    const { nome, sobrenome, email, senha } = req.body;
-    const verifyEmail = await prisma.user.findUnique({ where: { email } });
-    if (verifyEmail) {
-        return res.status(400).json({ message: 'E-mail já cadastrado' });
-        }
-    const hashedPassword = await bcrypt.hash(senha, 10);
-    try {
-        const user = await prisma.user.create({
-            data: { nome, sobrenome, email, senha: hashedPassword }
-        });
-        delete user.senha;
-        res.json(user);
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    }
+// 🔐 LOGIN (gera token)
+router.post('/login', async (req, res) => {
+  const { email, senha } = req.body;
+
+  try {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
+
+    const senhaConfere = await bcrypt.compare(senha, user.senha);
+    if (!senhaConfere) return res.status(401).json({ error: 'Senha incorreta' });
+
+    // Gerar token JWT
+    const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, {
+      expiresIn: '1h',
+    });
+
+    res.json({
+      message: 'Login realizado com sucesso',
+      token,
+      user: { id: user.id, nome: user.nome, email: user.email },
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
-// Listar usuários
-router.get('/', async (req, res) => {
-    const users = await prisma.user.findMany();
-    res.json(users);
+// 📥 CRIAR usuário
+router.post('/', async (req, res) => {
+  const { nome, sobrenome, email, senha } = req.body;
+  const hashedPassword = await bcrypt.hash(senha, 10);
+  try {
+    const user = await prisma.user.create({
+      data: { nome, sobrenome, email, senha: hashedPassword },
+    });
+    res.json(user);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 });
-// Listar por ID
-router.get('/:id', async (req, res) => {
+
+// 🔐 LISTAR TODOS (com token obrigatório)
+router.get('/', verificarToken, async (req, res) => {
+  const users = await prisma.user.findMany();
+  res.json(users);
+});
+
+// 🔎 LISTAR POR ID
+router.get('/:id', verificarToken, async (req, res) => {
   const id = Number(req.params.id);
   const user = await prisma.user.findUnique({ where: { id } });
   if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
   res.json(user);
 });
 
-
-// Atualizar usuário
-router.put('/:id', async (req, res) => {
-    const { id } = req.params;
-    const { nome, sobrenome, email, senha } = req.body;
-    try {
-        const user = await prisma.user.update({
-            where: { id: parseInt(id) },
-            data: { nome, sobrenome, email, senha }
-        });
-        res.json(user);
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    }
+// 🔄 ATUALIZAR usuário
+router.put('/:id', verificarToken, async (req, res) => {
+  const { id } = req.params;
+  const { nome, sobrenome, email, senha } = req.body;
+  const hashedPassword = await bcrypt.hash(senha, 10);
+  try {
+    const user = await prisma.user.update({
+      where: { id: parseInt(id) },
+      data: { nome, sobrenome, email, senha: hashedPassword },
+    });
+    res.json(user);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 });
-// atualizar com Patch
-router.patch('/:id', async (req, res) => {
+
+// ✏️ ATUALIZAR com PATCH
+router.patch('/:id', verificarToken, async (req, res) => {
   const id = Number(req.params.id);
-  const updatedUser = await prisma.user.update({
-    where: { id },
-    data: req.body
-  });
-  res.json(updatedUser);
+  try {
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: req.body,
+    });
+    res.json(updatedUser);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 });
 
-
-// Deletar usuário
-router.delete('/:id', async (req, res) => {
-    const { id } = req.params;
-    try {
-        await prisma.user.delete({
-            where: { id: parseInt(id) }
-        });
-        res.json({ message: 'Usuário deletado' });
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    }
+// ❌ DELETAR usuário
+router.delete('/:id', verificarToken, async (req, res) => {
+  const { id } = req.params;
+  try {
+    await prisma.user.delete({
+      where: { id: parseInt(id) },
+    });
+    res.json({ message: 'User deletado' });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 });
 
 module.exports = router;
