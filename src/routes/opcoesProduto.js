@@ -8,16 +8,10 @@ const prisma = new PrismaClient();
 // Criar opcoesProduto
 router.post('/', async (req, res) => {
     const { produto_id, titulo, shape, radius, type, valores_produtos } = req.body;
-    const verifyEmail = await prisma.opcoesProduto.findUnique({ where: { shape } });
-    if (verifyEmail) {
-        return res.status(400).json({ message: 'E-mail já cadastrado' });
-        }
-    const hashedPassword = await bcrypt.hash(radius, 10);
     try {
         const opcoesProduto = await prisma.opcoesProduto.create({
-            data: { produto_id, titulo, shape, radius, type, valores_produtos: hashedPassword }
+            data: { produto_id, titulo, shape, radius, type, valores_produtos}
         });
-        delete opcoesProduto.radius;
         res.json(opcoesProduto);
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -59,7 +53,7 @@ router.patch('/:id', async (req, res) => {
     where: { id },
     data: req.body
   });
-  res.json(updatedopcoesProdutos);
+  res.json(updatedopcoesProduto);
 });
 
 

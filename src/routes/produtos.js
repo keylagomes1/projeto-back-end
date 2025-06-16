@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 
 // Criar Produto
 router.post('/', async (req, res) => {
-    const { nome, slug, use_in_menu, stock , descricao, preco, preco_com_desconto    } = req.body;
+    const { nome, slug, use_in_menu, stock , descricao, preco, preco_com_desconto} = req.body;
     try {
         const produtos = await prisma.produtos.create({
             data: { nome, slug, use_in_menu,  stock , descricao, preco, preco_com_desconto   }
