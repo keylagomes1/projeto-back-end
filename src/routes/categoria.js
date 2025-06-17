@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
+const verificarToken = require('../middlewares/verificarToken1');
 
 const prisma = new PrismaClient();
 
 // Criar categoria
-router.post('/', async (req, res) => {
+router.post('/', verificarToken , async (req, res) => {
     const { nome, slug, use_in_menu } = req.body;
     try {
         const categoria = await prisma.categoria.create({
@@ -18,13 +19,13 @@ router.post('/', async (req, res) => {
 });
 
 // Listar categorias
-router.get('/', async (req, res) => {
+router.get('/',verificarToken, async (req, res) => {
     const categoria = await prisma.categoria.findMany();
     res.json(categoria);
 });
 
 // Listar categoria por ID
-router.get('/:id', async (req, res) => {
+router.get('/:id',verificarToken, async (req, res) => {
     const id = Number(req.params.id);
     const categoria = await prisma.categoria.findUnique({ where: { id } });
     if (!categoria) return res.status(404).json({ error: 'Categoria não encontrada' });
@@ -32,7 +33,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Atualizar categoria (PUT)
-router.put('/:id', async (req, res) => {
+router.put('/:id',verificarToken, async (req, res) => {
     const { id } = req.params;
     const { nome, slug, use_in_menu } = req.body;
     try {
@@ -47,7 +48,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // Atualizar parcialmente categoria (PATCH)
-router.patch('/:id', async (req, res) => {
+router.patch('/:id', verificarToken, async (req, res) => {
     const id = Number(req.params.id);
     try {
         const categoriaAtualizada = await prisma.categoria.update({
@@ -61,7 +62,7 @@ router.patch('/:id', async (req, res) => {
 });
 
 // Deletar categoria
-router.delete('/:id', async (req, res) => {
+router.delete('/:id',verificarToken, async (req, res) => {
     const { id } = req.params;
     try {
         await prisma.categoria.delete({

@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
+const verificarToken = require('../middlewares/verificarToken1');
 
 const prisma = new PrismaClient();
 
 // Criar Produto
-router.post('/', async (req, res) => {
+router.post('/',verificarToken, async (req, res) => {
     const { nome, slug, use_in_menu, stock , descricao, preco, preco_com_desconto} = req.body;
     try {
         const produtos = await prisma.produtos.create({
@@ -18,7 +19,7 @@ router.post('/', async (req, res) => {
 });
 
 // Listar Produto
-router.get('/', async (req, res) => {
+router.get('/', verificarToken , async (req, res) => {
     const produtos = await prisma.produtos.findMany();
     res.json(produtos);
 });
@@ -32,7 +33,7 @@ router.get('/:id', async (req, res) => {
 
 
 // Atualizar Produto
-router.put('/:id', async (req, res) => {
+router.put('/:id', verificarToken, async (req, res) => {
     const { id } = req.params;
     const { nome, slug, use_in_menu  } = req.body;
     try {
@@ -46,7 +47,7 @@ router.put('/:id', async (req, res) => {
     }
 });
 // atualizar com Patch
-router.patch('/:id', async (req, res) => {
+router.patch('/:id', verificarToken ,  async (req, res) => {
   const id = Number(req.params.id);
   const updatedProdutos = await prisma.produtos.update({
     where: { id },
@@ -57,7 +58,7 @@ router.patch('/:id', async (req, res) => {
 
 
 // Deletar Produto
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', verificarToken ,  async (req, res) => {
     const { id } = req.params;
     try {
         await prisma.produtos.delete({

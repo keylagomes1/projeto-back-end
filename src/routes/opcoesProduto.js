@@ -2,11 +2,12 @@ const express = require('express');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcrypt')
+const verificarToken = require('../middlewares/verificarToken1');
 
 const prisma = new PrismaClient();
 
 // Criar opcoesProduto
-router.post('/', async (req, res) => {
+router.post('/', verificarToken, async (req, res) => {
     const { produto_id, titulo, shape, radius, type, valores_produto } = req.body;
     try {
         const opcoesProduto = await prisma.opcoesProduto.create({
@@ -19,12 +20,12 @@ router.post('/', async (req, res) => {
 });
 
 // Listar opcoesProduto
-router.get('/', async (req, res) => {
+router.get('/', verificarToken, async (req, res) => {
     const opcoesProduto = await prisma.opcoesProduto.findMany();
     res.json(opcoesProduto);
 });
 // Listar por ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', verificarToken, async (req, res) => {
   const id = Number(req.params.id);
   const opcoesProduto = await prisma.opcoesProduto.findUnique({ where: { id } });
   if (!opcoesProduto) return res.status(404).json({ error: 'OpcoesProdutos   não encontrado' });
@@ -33,7 +34,7 @@ router.get('/:id', async (req, res) => {
 
 
 // Atualizar opcoesProduto
-router.put('/:id', async (req, res) => {
+router.put('/:id', verificarToken,  async (req, res) => {
     const { id } = req.params;
     const { produto_id, titulo, shape, radius, type, valores_produto } = req.body;
     try {
@@ -47,7 +48,7 @@ router.put('/:id', async (req, res) => {
     }
 });
 // atualizar com Patch
-router.patch('/:id', async (req, res) => {
+router.patch('/:id', verificarToken,  async (req, res) => {
   const id = Number(req.params.id);
   const updatedopcoesProduto = await prisma.opcoesProduto.update({
     where: { id },
@@ -58,7 +59,7 @@ router.patch('/:id', async (req, res) => {
 
 
 // Deletar opcoesProduto
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', verificarToken, async (req, res) => {
     const { id } = req.params;
     try {
         await prisma.opcoesProduto.delete({
