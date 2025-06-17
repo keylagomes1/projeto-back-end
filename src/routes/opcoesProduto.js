@@ -7,10 +7,10 @@ const prisma = new PrismaClient();
 
 // Criar opcoesProduto
 router.post('/', async (req, res) => {
-    const { produto_id, titulo, shape, radius, type, valores_produtos } = req.body;
+    const { produto_id, titulo, shape, radius, type, valores_produto } = req.body;
     try {
         const opcoesProduto = await prisma.opcoesProduto.create({
-            data: { produto_id, titulo, shape, radius, type, valores_produtos}
+            data: { produto_id, titulo, shape, radius, type, valores_produto}
         });
         res.json(opcoesProduto);
     } catch (error) {
@@ -35,11 +35,11 @@ router.get('/:id', async (req, res) => {
 // Atualizar opcoesProduto
 router.put('/:id', async (req, res) => {
     const { id } = req.params;
-    const { produto_id, titulo, shape, radius, type, valores_produtos } = req.body;
+    const { produto_id, titulo, shape, radius, type, valores_produto } = req.body;
     try {
         const opcoesProduto = await prisma.opcoesProduto.update({
             where: { id: parseInt(id) },
-            data: { produto_id, titulo, shape, radius, type, valores_produtos }
+            data: { produto_id, titulo, shape, radius, type, valores_produto }
         });
         res.json(opcoesProduto);
     } catch (error) {
