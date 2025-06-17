@@ -58,16 +58,32 @@ router.patch('/:id', verificarToken ,  async (req, res) => {
 
 
 // Deletar Produto
-router.delete('/:id', verificarToken ,  async (req, res) => {
-    const { id } = req.params;
-    try {
-        await prisma.produtos.delete({
-            where: { id: parseInt(id) }
-        });
-        res.json({ message: 'Produto deletado' });
-    } catch (error) {
-        res.status(400).json({ error: error.message });
+router.delete('/:id', verificarToken, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const produto = await prisma.produtos.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    if (!produto) {
+      return res.json({ message: 'Produto já foi excluído ou não existe.' });
     }
+
+    // Tenta deletar
+    await prisma.produtos.delete({
+      where: { id: parseInt(id) },
+    });
+
+    res.json({ message: 'Produto deletado com sucesso.' });
+  } catch (error) {
+    if (error.code === 'P2003') {
+      // Erro Prisma para violação de FK
+      return res.status(400).json({ error: 'Não é possível excluir o produto: ele está em uso em outras tabelas.' });
+    }
+
+    res.status(400).json({ error: error.message });
+  }
 });
+
 
 module.exports = router;

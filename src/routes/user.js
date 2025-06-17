@@ -38,12 +38,19 @@ router.post('/login', async (req, res) => {
 // 📥 CRIAR usuário
 router.post('/', async (req, res) => {
   const { nome, sobrenome, email, senha } = req.body;
+  if (!nome || !sobrenome || !email || !senha) {
+    return res.status(400).json({ error: 'Preencha todos os campos' });
+  }
+  const existingUser = await prisma.user.findUnique({ where: { email } });
+  if (existingUser){
+    return res.status(400).json({ error: 'Usuário já existe' });
+  }
   const hashedPassword = await bcrypt.hash(senha, 10);
   try {
     const user = await prisma.user.create({
       data: { nome, sobrenome, email, senha: hashedPassword },
     });
-    res.json(user);
+    res.status(201).json(user);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -97,10 +104,19 @@ router.patch('/:id', verificarToken, async (req, res) => {
 router.delete('/:id', verificarToken, async (req, res) => {
   const { id } = req.params;
   try {
+    const user = await prisma.user.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    if (!user) {
+      return res.json({ message: 'Usuário já foi excluído ou não existe.' });
+    }
+
     await prisma.user.delete({
       where: { id: parseInt(id) },
     });
-    res.json({ message: 'User deletado' });
+
+    res.json({ message: 'Usuário deletado com sucesso.' });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
